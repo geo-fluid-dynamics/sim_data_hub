@@ -1,5 +1,5 @@
 # Sim Data Hub
-This is the Data Hub developed by the Geofluiddynamics Group at RWTH Aachen University. It provides and combines 
+This is the Sim Data Hub developed by the Geofluiddynamics Group at RWTH Aachen University. It provides and combines 
 available data – measured or taken from the literature – and allows for the display, interpretation and export of the 
 data, for example, to run trajectory models for an ice melting probe.
 
