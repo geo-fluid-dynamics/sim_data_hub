@@ -1,10 +1,10 @@
-# Data Hub
+# Sim Data Hub
 This is the Data Hub developed by the Geofluiddynamics Group at RWTH Aachen University. It provides and combines 
 available data – measured or taken from the literature – and allows for the display, interpretation and export of the 
 data, for example, to run trajectory models for an ice melting probe.
 
 ## Requirements
-Python 3.8 or higher and the following packages are required to use the Data Hub:
+Python 3.8 or higher and the following packages are required to use the Sim Data Hub:
  * **General:** cartopy, folium, matplotlib, numpy, pandas, plotly, scipy, yaml
  * **GUI:** dash, dash_bootstrap_components, flask
  
