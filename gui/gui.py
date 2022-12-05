@@ -12,10 +12,31 @@ from flask import abort, send_from_directory
 from plotly.tools import mpl_to_plotly
 
 import yaml
+import importlib
 
-import export
-from library.ice_map.Map import Map
-from library.ice_regimes.Regime import PrettySafeLoader, Regime
+
+def load_lib_path(map_lib_path: str = 'sim-data-hub.library.map.Map',
+                  regime_lib_path: str = 'sim-data-hub.library.regimes.Regime',
+                  export_lib_path: str = 'sim-data-hub.export',
+                  source_path: str='../yaml-db'):
+    global Map, Regime, PrettySafeLoader, export, yaml_path
+
+    try:
+        importlib.import_module('sim-data-hub')
+
+    except ModuleNotFoundError:
+        map_lib_path = 'library.map.Map'
+        regime_lib_path = 'library.regimes.Regime'
+        export_lib_path = 'export'
+        source_path = 'yaml-db'
+
+    Map = getattr(importlib.import_module(map_lib_path), 'Map')
+    Regime = getattr(importlib.import_module(regime_lib_path), 'Regime')
+    PrettySafeLoader = getattr(importlib.import_module(regime_lib_path), 'PrettySafeLoader')
+    export = importlib.import_module(export_lib_path)
+    yaml_path = source_path
+
+load_lib_path()
 
 
 def load_available_yaml_files(current_regimes: dict, deep_update: bool = False):
@@ -37,14 +58,14 @@ def load_available_yaml_files(current_regimes: dict, deep_update: bool = False):
     available_regimes = dict(current_regimes)
     # Load available yaml files
     for i, (root, dirs, filenames) in enumerate(
-            os.walk(os.path.join(os.path.realpath(os.path.dirname(__file__)), os.pardir, 'yaml-db'))):
+            os.walk(os.path.join(os.path.realpath(os.path.dirname(__file__)), os.pardir, yaml_path))):
         if i > 0:  # skip root yaml-db directory
             region = os.path.split(root)[-1]
             if region[0] == '_' or region[0] == '.':
                 # skip all "hidden" folders
                 continue
 
-            # Add planetary body if it is not yet available
+            # Add map name if it is not yet available
             if region not in available_regimes.keys():
                 available_regimes[region] = dict()
 
@@ -58,12 +79,13 @@ def load_available_yaml_files(current_regimes: dict, deep_update: bool = False):
             for filename in filenames:
                 if deep_update or filename not in available_regimes[region].keys():
                     r = Regime()
-                    address = os.path.join(os.path.realpath(os.path.dirname(__file__)), os.pardir, 'yaml-db', region,
+                    address = os.path.join(os.path.realpath(os.path.dirname(__file__)), os.pardir, yaml_path, region,
                                            filename)
-                    r.load_ice_props(address)
-                    props = r.ice_props
+                    r.load_props(address)
+                    props = r.props
                     available_regimes[region][filename] = {'regime': r, 'props': props.applymap(str)}
     return available_regimes
+
 
 
 def check_changes(data_description, data_name, data_table):
@@ -102,7 +124,7 @@ def get_regime_from_current_dataset(data, title, description, figures):
     # changing the type of the location key from string to dictionary (for locating the boreholes)
     if 'location' in formated_data.keys():
         formated_data['location']['value'] = ast.literal_eval(formated_data['location']['value'])
-    new_regime.ice_props = formated_data
+    new_regime.props = formated_data
     return new_regime
 
 
@@ -132,9 +154,6 @@ div_plot_empty = html.Div(id='graph_plot')
 # set map path
 map_path = 'assets'
 
-# path for temporary downloadable files
-client_path = os.path.join('assets', 'client')
-
 # initial load of available files
 regimes = load_available_yaml_files({}, deep_update=True)
 
@@ -142,12 +161,17 @@ regimes = load_available_yaml_files({}, deep_update=True)
 app = dash.Dash(__name__)
 
 
-def setup_html_gui(gui_title, logo_ice_data_hub_png, logo_png, rwth_logo_png, main_dropdown_title='Planetary body:'):
-    global app
+def setup_html_gui(gui_title, logo_data_hub_png, logo_data_hub_png_title, logo_png, uni_logo_png,
+                   main_dropdown_title, client_path_name):
+
+    global app, client_path
+
+    # path for temporary downloadable files
+    client_path = client_path_name
 
     app.title = gui_title
 
-    # this is the whole dash layout of the ice-data-hub
+    # this is the whole dash layout of the data-hub
     # starting with main section of the layout
     app.layout = html.Div(children=[
         # INVISIBLE PARTS OF THE LAYOUT
@@ -164,23 +188,23 @@ def setup_html_gui(gui_title, logo_ice_data_hub_png, logo_png, rwth_logo_png, ma
         dcc.ConfirmDialog(id='delete_dialog'),
         # Notification that is shown if the data was changed but not saved
         dcc.ConfirmDialog(id='data_changed_dialog_region',
-                          message='Warning! Data has been changed and will be lost if changing planetary body!'),
+                          message='Warning! Data has been changed and will be lost if changing Maps!'),
         dcc.ConfirmDialog(id='data_changed_dialog_datasets',
                           message='Warning! Data has been changed and will be lost if changing dataset!'),
 
         # START OF THE VISIBLE LAYOUT
         # top div for the heading and logos
         html.Div(className='div_heading_logo', children=[
-            # sub div for the "Ice Data Hub" Heading
+            # sub div for the "Data Hub" Heading
             html.Div(className='div_heading', children=[
-                html.Img(className='logo_left', src=app.get_asset_url(logo_ice_data_hub_png),
-                         title='Ice Data Hub Logo (Images of planetary bodies: Courtesy NASA/JPL-Caltech.)'),
-                # html.Div(className='h1_heading', children='Ice Data Hub')
+                html.Img(className='logo_left', src=app.get_asset_url(logo_data_hub_png),
+                         title=logo_data_hub_png_title),
+                # html.Div(className='h1_heading', children='Data Hub')
             ]),
             # sub div for the logos
             html.Div(className='div_logo', children=[
                 # RWTH Aachen University Logo
-                html.Img(className='logo_right', src=app.get_asset_url(rwth_logo_png)),
+                html.Img(className='logo_right', src=app.get_asset_url(uni_logo_png)),
                 # GFD logo
                 html.Img(className='logo_right', src=app.get_asset_url(logo_png)),
             ])
@@ -569,7 +593,7 @@ def update_yaml_list(filter_n_clicks, _data_changed_datasets_cancel_n_clicks, _d
     # sort list by name
     for filename in [filenames[0] for filenames in sorted(names.items(), key=lambda x: x[1])]:
         # the label will be the name of the Regime object, but the value will always be the filename
-        enabled = regimes[region][filename]['regime'].ice_props.__contains__('location')
+        enabled = regimes[region][filename]['regime'].props.__contains__('location')
         if names[filename].lower().find(filter_value.lower()) >= 0:
             map_items.append({'label': names[filename], 'value': filename, 'disabled': not enabled})
             data_items.append({'label': '', 'value': filename})
@@ -722,7 +746,7 @@ def update_meta_info(_data_changed_approved, selected_file, current_region):
     description = regimes[current_region][selected_file]['regime'].description
 
     # update map
-    detail_map = Map(zoom_min=0, show_meta=False, planet_name=current_region,
+    detail_map = Map(zoom_min=0, show_meta=False, map_name=current_region,
                      map_offline=offline)
 
     # single file location display for small map
@@ -1066,7 +1090,7 @@ def toggle_modal_plot(_n1, _n2, _n3, _n4, _n_close, _is_open, title1, title2, ti
 def update_map(selected_files, current_region):
     if current_region == '_default':
         return 'No map for _default.'
-    main_map = Map(zoom_start=2, planet_name=current_region, map_offline=offline)
+    main_map = Map(zoom_start=2, map_name=current_region, map_offline=offline)
     if selected_files:
         main_map.location_list = [regimes[current_region][selected_file]['regime'] for selected_file in selected_files]
     try:
@@ -1180,7 +1204,7 @@ def set_single_multi_options(variable, selected_file, current_region):
     if variable is None:
         raise PreventUpdate
     else:
-        current_variable = regimes[current_region][selected_file]['regime'].ice_props[variable]
+        current_variable = regimes[current_region][selected_file]['regime'].props[variable]
 
         try:
             list_variable = list(current_variable['variable'].keys())
@@ -1243,7 +1267,7 @@ def store_data(n_clicks_store, variable, selected_multivariables, singlevariable
     else:  # if variable = None or n_clicks_store = 0
         if variable:
 
-            data_type = regimes[current_region][selected_file]['regime'].ice_props[variable]['type']
+            data_type = regimes[current_region][selected_file]['regime'].props[variable]['type']
             if data_type == 'expression':
                 raise PreventUpdate
             else:
@@ -1273,7 +1297,7 @@ def clear_clickanddata(variable, n_clicks_plot, n_clicks_store, data, multi, sin
         raise PreventUpdate
 
     if variable:
-        data_type = regimes[current_region][selected_file]['regime'].ice_props[variable]['type']
+        data_type = regimes[current_region][selected_file]['regime'].props[variable]['type']
         if data_type == 'expression':  # only for 'expression' type
 
             try:
@@ -1317,8 +1341,8 @@ def show_plot(n_clicks, ts, data, variable, selected_multivariables, singlevaria
 
     if variable and n_clicks > 0:
 
-        data_type = regimes[current_region][selected_file]['regime'].ice_props[variable]['type']
-        current_variable = regimes[current_region][selected_file]['regime'].ice_props[variable]
+        data_type = regimes[current_region][selected_file]['regime'].props[variable]['type']
+        current_variable = regimes[current_region][selected_file]['regime'].props[variable]
         plot_kwargs = {'gui': True, 'use_plotly': use_plotly}
 
         if data_type == 'expression':
@@ -1382,7 +1406,7 @@ def enable_plot(variable, selected_multivariables, selected_singlevariable, n_cl
                 current_region):
     message = ''
     if variable is not None and selected_file is not None and current_region is not None:
-        current_variable = regimes[current_region][selected_file]['regime'].ice_props[variable]
+        current_variable = regimes[current_region][selected_file]['regime'].props[variable]
         state = {'coordinate': (True, True, True, True, True, False, message, True, True),
                  'scalar': (True, True, True, True, True, False, message, True, True),
                  'array': (True, True, True, True, True, False, message, True, True),
@@ -1508,7 +1532,7 @@ def upload_file(_data_changed_approved, file_content, file_name: str, current_re
             file_bytes = base64.b64decode(file_content.split(',')[-1])
             _ = yaml.load(file_bytes.decode('unicode_escape'), Loader=PrettySafeLoader)
             is_yaml_file = True
-            message += f'Upload {file_name} to planetary body {current_region_name}'
+            message += f'Upload {file_name} to Map name {current_region_name}'
             # check if file already exists
             if file_name in regimes[current_region_name].keys():
                 message += ' and replace existing file?'
@@ -1573,7 +1597,7 @@ def write_yaml_file(newfile_dialog_n_clicks, save_dialog_n_clicks, save_as_dialo
     else:
         return dash.no_update, dash.no_update
 
-    filepath = os.path.join(os.path.realpath(os.path.dirname(__file__)), os.pardir, 'yaml-db', current_region_name,
+    filepath = os.path.join(os.path.realpath(os.path.dirname(__file__)), os.pardir, yaml_path, current_region_name,
                             write_file_name)
 
     if source in ['delete_dialog']:
@@ -1591,7 +1615,7 @@ def write_yaml_file(newfile_dialog_n_clicks, save_dialog_n_clicks, save_as_dialo
         if source in ['save_dialog', 'save_as_dialog']:
             ya = get_regime_from_current_dataset(data, title, des, current_figures)
         else:
-            ya.ice_props = formated_data
+            ya.props = formated_data
         ya.save_regime(filepath)
 
         # save state before proceeding
@@ -1654,13 +1678,17 @@ def save_file_as_relay(n_submit_save_file_as, n_clicks_save_file_as):
 
 
 if __name__ == '__main__':
+    load_lib_path()
     # General settings:
     settings = {
-        "gui_title": 'Ice Data Hub',
+        "gui_title": 'Data Hub',
         # for the image of logo
-        "logo_ice_data_hub_png": 'logo_ice_data_hub.png',
+        "logo_data_hub_png": 'logo_data_hub.png',
+        "logo_data_hub_png_title": 'Data Hub Logo',
         "logo_png": 'logo.png',
-        "rwth_logo_png": 'rwth_aices_rgb.png',
+        "uni_logo_png": 'uni_logo.png',
+        "main_dropdown_title": 'Map name:',
+        "client_path_name": os.path.join('assets', 'client')
     }
 
     setup_html_gui(**settings)
