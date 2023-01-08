@@ -12,15 +12,14 @@
 
 /* Define main colors here */
 :root {
-    --hks44: #00549F; /* HKS44 100% (RWTH blue) */
-    --hks44_75:  #407FB7; /* HKS44 75% (RWTH blue) */
-    --hks44_50:  #8EBAE5; /* HKS44 50% (RWTH blue) */
-    --hks44_10:  #E8F1FA; /* HKS44 10% (RWTH blue) */
-    --red-color: #CC071E; /* HKS15K (Red) */
-    --gray75: #646567;
-    --gray50: #9C9E9F;
-    --gray25: #CFD1D2;
-    --gray10: #ECEDED;
+    --DeleteError: #CC071E;
+    --UpdateBorder: #FFA07A;
+    --ActiveEvenRow: #FFA07A;
+    --Button: #FFEFD5;
+    --Background: #FAF0E6;
+    --EvenRow: #FAF0E6;
+    --RowHeader: #FFE4B5;
+    --BorderHover: #FF7F50;
 }
 
 /* Set font to Arial for the whole site */
@@ -40,23 +39,23 @@ a {
 }
 
 button {
-    background-color: var(--gray10);
-    border-color: var(--hks44);
+    background-color: var(--Button);  /*PapayaWhip, button background*/
+    border-color: var(--BorderHover); /*coral, button border*/
     border-radius: 5pt;
     border-style: solid;
     display: inline-block;
     font-size: 10pt;
 }
 button:hover:enabled {
-    background-color: var(--hks44);
-    color: white;
+    background-color: var(--BorderHover); /*coral, buttonhover, background*/
+    color: white; /*white, buttonhover, textcolor*/
     cursor: pointer;
 }
 
 .button {
-    background-color: var(--gray10);
+    background-color: var(--Button);  /*PapayaWhip, button background*/
     display: inline-block;
-    border-color: var(--hks44);
+    border-color: var(--BorderHover); /*coral, button border*/
     border-radius: 5pt;
     border-style: solid;
     display: inline-block;
@@ -69,12 +68,12 @@ button:hover:enabled {
     cursor: default;
 }
 .button:hover {
-    background-color: var(--hks44);
-    color: white;
+    background-color: var(--BorderHover); /*coral, buttonhover, background*/
+    color: white; /*white, buttonhover, textcolor*/
 }
 
 input {
-    border-color: var(--hks44);
+    border-color: var(--BorderHover); /*coral, text typing area, border*/
     border-radius: 5pt;
     border-style: solid;
     display: inline-block;
@@ -82,26 +81,26 @@ input {
 }
 
 textarea {
-    border-color: var(--hks44);
+    border-color: var(--BorderHover); /*coral, min_img, RHS, border*/
     border-radius: 5pt;
     border-style: solid;
     border-width: thin;
 }
 
 td {
-    --accent: var(--hks44);
+    --accent: var(--BorderHover);  /*coral*/
 }
 
 th {
-    --accent: var(--hks44);
+    --accent: var(--BorderHover); /*coral*/
 }
 
 .btn_delete {
-    border-color: var(--red-color);
-    color: var(--red-color);
+    border-color: var(--DeleteError);
+    color: var(--DeleteError);
 }
 .btn_delete:hover:enabled {
-    background-color: var(--red-color);
+    background-color: var(--DeleteError);
 }
 
 /* main div containing div of  title 'Ice Data Hub' and logos */
@@ -110,7 +109,7 @@ th {
     height: 90px;
     width: 99%;
     border-style: solid;
-    border-color: var(--hks44_50);
+    border-color: var(--Background); /*var(--Linen), logo section border*/
     border-width: medium;
     border-radius: 5pt;
 }
@@ -163,7 +162,7 @@ th {
 /* the main div containing dropdown, select options , etc */
 .div_dropdown {
     position: fixed;
-    background-color: var(--hks44_50);
+    background-color: var(--Background); /*var(--Linen), LHS, background*/
     top: 110px;
     height: calc(100% - 115px);
     width: 350px;
@@ -318,12 +317,9 @@ th {
 /* div containing divs of single small map and the text areas for data tab and plot tab */
 .div_single_tab_map_text {
     position: absolute;
-    background-color: var(--hks44_50);
+    background-color: var(--Background); /*var(--Linen), RHS of mini_img, under the textarea, background*/
     height: 120pt;
     width: 100%;
-    /*border-style: solid;*/
-    /*border-width: medium;*/
-    /*border-color: var(--hks44);*/
     border-radius: 5pt;
 }
 
@@ -333,9 +329,6 @@ th {
     height: 100%;
     width: 30%;
     border-radius: 5pt;
-    /*border-style: solid;*/
-    /*border-width: medium;*/
-    /*border-color: #3c3c3c;*/
 }
 
 /* single small map for data tab and plot tab */
@@ -412,7 +405,7 @@ th {
     clear: left;
     margin: 0;
     borderWidth: 0;
-    background-color: var(--color-red);
+    background-color: var(--DeleteError);
 }
 
 .img_figure_hidden {
@@ -420,11 +413,11 @@ th {
 }
 
 .img_figure {
-    border-color: var(--hks44);
+    border-color: var(--BorderHover); /*var(--coral), border of the updated img*/
     border-radius: 5pt;
     border-style: solid;
     display: inline-block;
-    background-color: white;
+    background-color: white; /*white*/
     border-width: thin;
     text-align: center;
     vertical-align: middle;
@@ -436,7 +429,7 @@ th {
     cursor: default;
 }
 .img_figure:hover {
-    background-color: var(--hks44);
+    background-color: var(--BorderHover); /*var(--coral)*/
     color: white;
     opacity: 0.5;
     cursor: pointer;
@@ -450,7 +443,7 @@ th {
 }
 
 .div_add_figure {
-    border-color: var(--hks44);
+    border-color: var(--BorderHover); /*var(--coral), the border of + button*/
     border-radius: 5pt;
     border-style: solid;
     display: inline-block;
@@ -466,8 +459,8 @@ th {
     cursor: default;
 }
 .div_add_figure:hover {
-    background-color: var(--hks44);
-    color: white;
+    background-color: var(--BorderHover); /*var(--coral), background color when hover on the + button*/
+    color: white; /*white, color of + when hover*/
     cursor: pointer;
 }
 
@@ -478,11 +471,8 @@ th {
     height: calc(100% - 180pt);
     overflow-y: auto;
     width: 100%;
-    background-color: var(--hks44_50);
+    background-color: var(--Background); /*var(--Linen), color before showing the plot and table*/
     border-radius: 5pt;
-    /*border-style: solid;*/
-    /*border-color: var(--hks44);*/
-    /*border-width: medium;*/
 }
 
 .btn_exp {
@@ -491,7 +481,7 @@ th {
 }
 
 .p_error {
-    color: var(--red-color);
+    color: var(--DeleteError);
 }
 
 .radio_nexd {
@@ -501,14 +491,11 @@ th {
 /* div for containing all the buttons in all the sub tabs */
 .div_buttons {
     position: absolute;
-    background-color: var(--hks44_50);
+    background-color: var(--Background); /*var(--Linen), background color under the button area, buttons over the tables and plot*/
     top: 125pt;
     height: 50pt;
     width: 100%;
     border-radius: 5pt;
-    /*border-style: solid;*/
-    /*border-color: var(--hks44);*/
-    /*border-width: medium;*/
 }
 
 .dd_plot {
@@ -634,11 +621,11 @@ th {
     width: 24%;
     height: 15pt;
     margin: auto;
-    border-color: var(--red-color);
-    color: var(--red-color);
+    border-color: var(--DeleteError);
+    color: var(--DeleteError);
 }
 .button_24:hover:enabled {
-    background-color: var(--red-color);
+    background-color: var(--DeleteError);
 }
 
 /*!

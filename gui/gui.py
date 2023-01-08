@@ -18,10 +18,12 @@ import importlib
 def load_lib_path(map_lib_path: str = 'sim-data-hub.library.map.Map',
                   regime_lib_path: str = 'sim-data-hub.library.regimes.Regime',
                   export_lib_path: str = 'sim-data-hub.export',
-                  source_path: str='../yaml-db'):
-    global Map, Regime, PrettySafeLoader, export, yaml_path
+                  source_path: str = '../yaml-db',
+                  assets_path: str = '/assets',
+                  stylesheet_path: str = 'stylesheet.css'):
+    global Map, Regime, PrettySafeLoader, export, yaml_path, assets_folder_path, external_stylesheet
 
-    try:
+    try:  # using sim-data-hub as submodule
         importlib.import_module('sim-data-hub')
 
     except ModuleNotFoundError:
@@ -35,6 +37,9 @@ def load_lib_path(map_lib_path: str = 'sim-data-hub.library.map.Map',
     PrettySafeLoader = getattr(importlib.import_module(regime_lib_path), 'PrettySafeLoader')
     export = importlib.import_module(export_lib_path)
     yaml_path = source_path
+    assets_folder_path = os.getcwd() + assets_path
+    external_stylesheet = [stylesheet_path]
+
 
 load_lib_path()
 
@@ -85,7 +90,6 @@ def load_available_yaml_files(current_regimes: dict, deep_update: bool = False):
                     props = r.props
                     available_regimes[region][filename] = {'regime': r, 'props': props.applymap(str)}
     return available_regimes
-
 
 
 def check_changes(data_description, data_name, data_table):
@@ -144,9 +148,10 @@ current_figures = {}
 # Basic table style:
 basic_style_data_conditional = []
 # Even rows have a grey background
-basic_style_data_conditional.extend([{'if': {'row_index': 'even'}, 'backgroundColor': 'var(--gray10)'}])
+basic_style_data_conditional.extend([{'if': {'row_index': 'even'}, 'backgroundColor': 'var(--EvenRow)'}])
 basic_style_data_conditional.extend(
-    [{'if': {'state': 'active'}, 'backgroundColor': 'var(--hks44_10)', 'border': '1px solid var(--hks44)'}])
+    [{'if': {'state': 'active'}, 'backgroundColor': 'var(--ActiveEvenRow)',
+      'border': '1px solid var(--ActiveEvenRow)'}])
 
 # default html elements to be able to reset them
 div_plot_empty = html.Div(id='graph_plot')
@@ -158,12 +163,11 @@ map_path = 'assets'
 regimes = load_available_yaml_files({}, deep_update=True)
 
 # Starting Dash GUI
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, assets_folder=assets_folder_path, external_stylesheets=external_stylesheet)
 
 
 def setup_html_gui(gui_title, logo_data_hub_png, logo_data_hub_png_title, logo_png, uni_logo_png,
                    main_dropdown_title, client_path_name):
-
     global app, client_path
 
     # path for temporary downloadable files
@@ -253,7 +257,7 @@ def setup_html_gui(gui_title, logo_data_hub_png, logo_data_hub_png_title, logo_p
                     dcc.Upload(id='upload_file', children=['Drag and Drop or ', html.A('Select'), ' a File to Upload'],
                                style={'width': 'calc(100% - 6px', 'height': '25px', 'lineHeight': '25px',
                                       'borderWidth': '1px', 'borderStyle': 'dashed', 'borderRadius': '5px',
-                                      'borderColor': 'var(--hks44)', 'textAlign': 'center', 'margin': '2px'}),
+                                      'borderColor': 'var(--UpdateBorder)', 'textAlign': 'center', 'margin': '2px'}),
                     # text are where the name of the new file or updating previous file will be added
                     dcc.Input(className='input_add_file', id='input_add_file',
                               placeholder='Enter name of new file (*.yaml)', value=''),
@@ -353,7 +357,7 @@ def setup_html_gui(gui_title, logo_data_hub_png, logo_data_hub_png_title, logo_p
                                 page_size=1000,
                                 style_cell={'overflow': 'hidden', 'textOverflow': 'ellipsis', 'maxWidth': 100},
                                 style_data_conditional=basic_style_data_conditional,
-                                style_header={'backgroundColor': 'var(--gray25)', 'fontWeight': 'bold'},
+                                style_header={'backgroundColor': 'var(--RowHeader)', 'fontWeight': 'bold'},
                                 style_header_conditional=[{'if': {'column_id': col}, 'textDecoration': 'underline',
                                                            'textDecorationStyle': 'dotted', } for col in
                                                           ['unit', 'variable_unit']],
@@ -1187,7 +1191,7 @@ def update_data(_data_changed_approved, add_column_click, add_row_click, selecte
             for col in columns])
         style_data_conditional.extend([
             {'if': {'filter_query': '{{{}}} = "nan"'.format(col['name']), 'column_id': col['name'],
-                    'row_index': 'even'}, 'color': 'var(--gray10)'}
+                    'row_index': 'even'}, 'color': 'var(--EvenRow)'}
             for col in columns])
 
         return data, columns, tooltip_data, style_data_conditional, plot_options, None
