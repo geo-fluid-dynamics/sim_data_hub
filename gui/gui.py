@@ -17,6 +17,7 @@ import importlib
 
 def load_lib_path(map_lib_path: str = 'sim-data-hub.library.map.Map',
                   regime_lib_path: str = 'sim-data-hub.library.regimes.Regime',
+                  yaml_loader_path: str = 'sim-data-hub.library.regimes.Regime',
                   export_lib_path: str = 'sim-data-hub.export',
                   source_path: str = '../yaml-db',
                   assets_path: str = '/assets',
@@ -29,12 +30,13 @@ def load_lib_path(map_lib_path: str = 'sim-data-hub.library.map.Map',
     except ModuleNotFoundError:
         map_lib_path = 'library.map.Map'
         regime_lib_path = 'library.regimes.Regime'
+        yaml_loader_path = 'library.regimes.Regime'
         export_lib_path = 'export'
         source_path = 'yaml-db'
 
     Map = getattr(importlib.import_module(map_lib_path), 'Map')
     Regime = getattr(importlib.import_module(regime_lib_path), 'Regime')
-    PrettySafeLoader = getattr(importlib.import_module(regime_lib_path), 'PrettySafeLoader')
+    PrettySafeLoader = getattr(importlib.import_module(yaml_loader_path), 'PrettySafeLoader')
     export = importlib.import_module(export_lib_path)
     yaml_path = source_path
     assets_folder_path = os.getcwd() + assets_path
