@@ -14,18 +14,34 @@ from plotly.tools import mpl_to_plotly
 import yaml
 import importlib
 
+module_str = ''
+module = None
+modules = (os.path.normpath(os.path.split(os.getcwd())[0])).split(os.sep)
+for i in range(1, len(modules) + 1):
+    try:
+        importlib.import_module(modules[-i])
+        module_str = modules[-i] + '.' + module_str
+        module = modules[-i]
+        break
+    except ModuleNotFoundError:
+        module_str = modules[-i] + '.' + module_str
 
-def load_lib_path(map_lib_path: str = 'sim-data-hub.library.map.Map',
-                  regime_lib_path: str = 'sim-data-hub.library.regimes.Regime',
-                  yaml_loader_path: str = 'sim-data-hub.library.regimes.Regime',
-                  export_lib_path: str = 'sim-data-hub.export',
+if module is None:  # no submodules
+    module_str = ''
+    module = 'sim-data-hub'
+
+
+def load_lib_path(map_lib_path: str = module_str +'sim-data-hub.library.map.Map',
+                  regime_lib_path: str = module_str +'sim-data-hub.library.regimes.Regime',
+                  yaml_loader_path: str = module_str +'sim-data-hub.library.regimes.Regime',
+                  export_lib_path: str = module_str +'sim-data-hub.export',
                   source_path: str = '../yaml-db',
                   assets_path: str = '/assets',
                   stylesheet_path: str = 'stylesheet.css'):
     global Map, Regime, PrettySafeLoader, export, yaml_path, assets_folder_path, external_stylesheet
 
     try:  # using sim-data-hub as submodule
-        importlib.import_module('sim-data-hub')
+        importlib.import_module(module)
 
     except ModuleNotFoundError:
         map_lib_path = 'library.map.Map'
