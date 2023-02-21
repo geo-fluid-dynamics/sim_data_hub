@@ -225,10 +225,8 @@ def setup_html_gui(gui_title, logo_data_hub_png, logo_data_hub_png_title, logo_p
             ]),
             # sub div for the logos
             html.Div(className='div_logo', children=[
-                # RWTH Aachen University Logo
-                html.Img(className='logo_right', src=app.get_asset_url(uni_logo_png)),
-                # GFD logo
-                html.Img(className='logo_right', src=app.get_asset_url(logo_png)),
+                html.Img(className='logo_right', src=app.get_asset_url(uni_logo_png)) if uni_logo_png else None,
+                html.Img(className='logo_right', src=app.get_asset_url(logo_png)) if logo_png else None,
             ])
         ]),
 
