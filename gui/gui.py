@@ -31,14 +31,15 @@ if module is None:  # no submodules
     module = 'sim-data-hub'
 
 
-def load_lib_path(map_lib_path: str = module_str +'sim-data-hub.library.map.Map',
-                  regime_lib_path: str = module_str +'sim-data-hub.library.regimes.Regime',
-                  yaml_loader_path: str = module_str +'sim-data-hub.library.regimes.Regime',
-                  export_lib_path: str = module_str +'sim-data-hub.export',
-                  source_path: str = '../yaml-db',
-                  assets_path: str = '/assets',
+def load_lib_path(map_lib_path: str = module_str + 'sim-data-hub.library.map.Map',
+                  regime_lib_path: str = module_str + 'sim-data-hub.library.regimes.Regime',
+                  yaml_loader_path: str = module_str + 'sim-data-hub.library.regimes.Regime',
+                  export_lib_path: str = module_str + 'sim-data-hub.export',
+                  source_path: str = os.path.join('..', 'yaml-db'),
+                  assets_path: str = 'assets',
+                  client_relpath: str = os.path.join('assets', 'client'),
                   stylesheet_path: str = 'stylesheet.css'):
-    global Map, Regime, PrettySafeLoader, export, yaml_path, assets_folder_path, external_stylesheet
+    global Map, Regime, PrettySafeLoader, export, yaml_path, assets_folder_path, external_stylesheet, client_path, server_route
 
     try:  # using sim-data-hub as submodule
         importlib.import_module(module)
@@ -55,8 +56,12 @@ def load_lib_path(map_lib_path: str = module_str +'sim-data-hub.library.map.Map'
     PrettySafeLoader = getattr(importlib.import_module(yaml_loader_path), 'PrettySafeLoader')
     export = importlib.import_module(export_lib_path)
     yaml_path = source_path
-    assets_folder_path = os.getcwd() + assets_path
+    assets_folder_path = os.path.join(os.getcwd(), assets_path)
+    # path for temporary downloadable files
+    client_path = client_relpath
     external_stylesheet = [stylesheet_path]
+    server_route = os.path.join(os.path.relpath(os.getcwd(), os.path.dirname(__file__)),
+                                client_path)
 
 
 load_lib_path()
@@ -185,11 +190,8 @@ app = dash.Dash(__name__, assets_folder=assets_folder_path, external_stylesheets
 
 
 def setup_html_gui(gui_title, logo_data_hub_png, logo_data_hub_png_title, logo_png, uni_logo_png,
-                   main_dropdown_title, client_path_name):
-    global app, client_path
-
-    # path for temporary downloadable files
-    client_path = client_path_name
+                   main_dropdown_title):
+    global app
 
     app.title = gui_title
 
@@ -560,7 +562,7 @@ def setup_html_gui(gui_title, logo_data_hub_png, logo_data_hub_png_title, logo_p
 
 
 # server route to all downloadable files
-@app.server.route('/assets/client/<path:filename>')
+@app.server.route(os.path.join('/', server_route, '<path:filename>'))
 def serve_image(filename):
     try:
         return send_from_directory(client_path, path=filename, as_attachment=True)
@@ -1707,8 +1709,7 @@ if __name__ == '__main__':
         "logo_data_hub_png_title": 'Data Hub Logo',
         "logo_png": 'logo.png',
         "uni_logo_png": 'uni_logo.png',
-        "main_dropdown_title": 'Map name:',
-        "client_path_name": os.path.join('assets', 'client')
+        "main_dropdown_title": 'Map name:'
     }
 
     setup_html_gui(**settings)
