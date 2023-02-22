@@ -367,7 +367,10 @@ class Regime:
         output = self.props
         for prop in output:
             for hidden_param in self.HIDDEN_PARAMS:
-                del output[prop][hidden_param]
+                try:
+                    del output[prop][hidden_param]
+                except KeyError:
+                    pass
         if self.name != self.NAME_DEFAULT:
             output['name'] = self.name
         if self.description != self.DESCRIPTION_DEFAULT:
