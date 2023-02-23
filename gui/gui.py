@@ -221,7 +221,7 @@ def setup_html_gui(gui_title, logo_data_hub_png, logo_data_hub_png_title, logo_p
         html.Div(className='div_heading_logo', children=[
             # sub div for the "Data Hub" Heading
             html.Div(className='div_heading', children=[
-                html.Img(className='logo_left', src=app.get_asset_url(logo_data_hub_png),
+                html.Img(className='logo_left', src=app.get_asset_url(logo_data_hub_png) if logo_data_hub_png else None,
                          title=logo_data_hub_png_title),
                 # html.Div(className='h1_heading', children='Data Hub')
             ]),
@@ -1705,10 +1705,10 @@ if __name__ == '__main__':
     settings = {
         "gui_title": 'Data Hub',
         # for the image of logo
-        "logo_data_hub_png": 'logo_data_hub.png',
-        "logo_data_hub_png_title": 'Data Hub Logo',
-        "logo_png": 'logo.png',
-        "uni_logo_png": 'uni_logo.png',
+        "logo_data_hub_png": None,
+        "logo_data_hub_png_title": None,
+        "logo_png": None,  # additional logo on top right
+        "uni_logo_png": 'rwth_mbd_en_rgb.png',
         "main_dropdown_title": 'Map name:'
     }
 
