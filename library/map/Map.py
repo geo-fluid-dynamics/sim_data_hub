@@ -179,6 +179,10 @@ class Map:
             # names of _default tiles dir, zoom level: 1 to 6, format .jpg or .png depends on tiles
             tile_set = os.path.join('USGS_National_Map_Topo', '{z}', '{x}', '{y}.png')
             self.attribute = '@ Mobile Atlas Creator(MOBAC)'
+        elif self.map_name.lower() == 'test':
+            # names of _default tiles dir, zoom level: 1 to 6, format .jpg or .png depends on tiles
+            tile_set = os.path.join('USGS_National_Map_Topo', '{z}', '{x}', '{y}.png')
+            self.attribute = '@ Mobile Atlas Creator(MOBAC)'
         else:
             raise NotImplementedError(
                 'Currently only Earth is available for map plotting')
@@ -189,6 +193,9 @@ class Map:
         # have to run these steps
         # if it is online, we have to set special online tile for these maps
         if self.map_name.lower() == 'earth':
+            self.tiles_path = self.tiles_path
+            self.attribute = 'leaflet'
+        elif self.map_name.lower() == 'test':
             self.tiles_path = self.tiles_path
             self.attribute = 'leaflet'
 

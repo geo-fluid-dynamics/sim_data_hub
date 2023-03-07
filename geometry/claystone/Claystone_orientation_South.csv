@@ -1,0 +1,13 @@
+X,Y,Z,azimuth,dip,polarity,formation
+0,0,-50,90,5,1,Tertiary
+0,0,-300,90,3.75,1,Upper_Jurassic_3
+0,0,-350,90,3.75,1,Upper_Jurassic_2
+0,0,-500,90,3.75,1,Upper_Jurassic_1
+0,0,-530,90,3.75,1,Mid_Jurassic_3
+0,0,-580,90,3.75,1,Mid_Jurassic_2
+0,0,-620,90,3.25,1,Mid_Jurassic_1
+0,0,-760,90,3.25,1,Lower_Jurassic_2
+0,0,-780,90,3.25,1,Lower_Jurassic_1
+0,0,-830,90,3.75,1,Keuper_3
+0,0,-880,90,3.75,1,Keuper_2
+0,0,-955,90,3.75,1,Keuper_1

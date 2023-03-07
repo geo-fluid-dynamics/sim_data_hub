@@ -504,6 +504,27 @@ th {
     display: inline-block;
     verticalAlign: top;
 }
+
+.plot_variable_dropdown {
+    width: 66.6%;
+    font-size: 13px;
+    display: inline-block;
+    verticalAlign: top;
+}
+
+.dd_plot_variable_dropdown {
+    width: 50.0%;
+    font-size: 13px;
+    display: inline-block;
+    verticalAlign: top;
+}
+
+.dd_geometry_2D3D_dropdown{
+    width: 100.0%;
+    font-size: 13px;
+    display: inline-block;
+    verticalAlign: top;
+}
 /* 1st button in 1st row */
 .button_11 {
     position: absolute;

@@ -221,11 +221,15 @@ class Regime:
             x = list(props_value.keys())
             props_y = list(props_value.values())
             symbol = 'b.'
+        elif props_type =='geometry':
+            fig = px.line(x=[2,3,4], y=[10,13, 14], title='geometry', labels='test')
+            fig.update_traces(name='Data', showlegend=True)
+
         else:
-            raise NotImplementedError('Currently only expressions and tabulated values can be plotted.')
+            raise NotImplementedError('Currently only expressions, tabulated values and geometry can be plotted.')
 
         y_err = None
-        if props_type == 'expression' or props_type == 'tabulated':
+        if props_type == 'expression' or props_type == 'tabulated' or props_type == 'geometry':
             if type(props_dev) == dict:
                 y_err = list(props_dev.values())
             elif (type(props_dev) == float or type(props_dev) == int) and not np.isnan(props_dev):
@@ -243,6 +247,13 @@ class Regime:
                                                           project_z=True))
                 elif props_type == 'tabulated':
                     fig = px.scatter(x=x, y=props_y, error_y=y_err, title=name_props, labels=labels)
+                    fig.update_traces(name='Data', showlegend=True)
+                elif props_type == 'geometry':
+                    df = pd.DataFrame(dict(
+                        x=[1, 3, 2, 4],
+                        y=[1, 2, 3, 4]
+                    ))
+                    fig = px.line(df, x="x", y="y", title="Unsorted Input")
                     fig.update_traces(name='Data', showlegend=True)
                 if self.props[name_props]['_interpolated']:
                     fig.add_trace(go.Scatter(x=list(self.props[name_props]['_interpolated'].keys()),

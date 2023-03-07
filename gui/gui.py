@@ -538,18 +538,46 @@ def setup_html_gui(gui_title, logo_data_hub_png, logo_data_hub_png_title, logo_p
                             html.Div(style={'width': '0.1%', 'display': 'inline-block'}),
                             html.Div(className='dd_plot', children=[
                                 dcc.Dropdown(id='graph_dropdown', clearable=False, placeholder='Select property...')]),
-                            html.Div(className='dd_plot', children=[
-                                dcc.Dropdown(id='graph-multivariables', placeholder='Select one or two variable(s)...',
-                                             multi=True)]),
-                            html.Div(className='dd_plot', children=[
-                                dcc.Dropdown(id='graph-singlevariable', placeholder='Select variable for storing value('
-                                                                                    's)...')]),
 
-                            dcc.Input(id='graph_min_x', placeholder='Enter minimum', disabled=True),
-                            dcc.Input(id='graph_max_x', placeholder='Enter maximum', disabled=True),
-                            dcc.Input(id='graph_constant_x', placeholder='Enter constant value', disabled=True),
-                            html.Button(id='btn_store', n_clicks=0, disabled=True, children='Store values'),
-                            html.Button(id='btn_plot', n_clicks=0, disabled=True, children='Plot property')
+                            html.Div(className='plot_variable_dropdown', id='div_plot_varaible_dropdown', children=[
+
+                                    html.Div(className='dd_plot_variable_dropdown', children=[
+                                        dcc.Dropdown(id='graph-multivariables',
+                                                     placeholder='Select one or two variable(s)...',
+                                                     multi=True)]),
+                                    html.Div(className='dd_plot_variable_dropdown', children=[
+                                        dcc.Dropdown(id='graph-singlevariable',
+                                                     placeholder='Select variable for storing value('
+                                                                 's)...')]),
+                                ], hidden=False, style={'display': 'inline-block'}),
+
+                            html.Div(id='div_plot_variable_input', children=[
+                                    dcc.Input(id='graph_min_x', placeholder='Enter minimum', disabled=True),
+                                    dcc.Input(id='graph_max_x', placeholder='Enter maximum', disabled=True),
+                                    dcc.Input(id='graph_constant_x', placeholder='Enter constant value', disabled=True),
+                                    html.Button(id='btn_store', n_clicks=0, disabled=True, children='Store values'),
+                                    html.Button(id='btn_plot', n_clicks=0, disabled=True, children='Plot property')
+                                ], hidden=False),
+
+                            # geometry input
+                            html.Div(className='plot_variable_dropdown', id='div_geometry_2D3D', children=[
+
+                                html.Div(className='dd_geometry_2D3D_dropdown', children=[
+                                    dcc.Dropdown(id='geometry_2D3D_dropdown',
+                                                 placeholder='Select 2D or 3D geometry...',
+                                                 options= [{'label': '2D geometry', 'value': '2D geometry'},
+                                                           {'label': '3D geometry', 'value': '3D geometry'}],
+                                                 )])
+                            ], hidden=True, style={'display': 'none'}),
+
+                            html.Div(id='div_geometry_variable_input', children=[
+                                dcc.Input(id='geometry_start', placeholder='start', disabled=True,  style={'width': '20.0%'}),
+                                dcc.Input(id='geometry_end', placeholder='end', disabled=True,  style={'width': '20.0%'}),
+                                dcc.Input(id='geometry_resolution', placeholder='resolution', disabled=True, style={'width': '20.0%'}),
+                                #html.Button(id='geometry_store', n_clicks=0, disabled=True, children='Store'),
+                                html.Button(id='geometry_plot', n_clicks=0, disabled=True, children='Plot', style={'width': '25.0%'})
+                            ], hidden=True),
+
 
                         ]),
 
@@ -1195,7 +1223,7 @@ def update_data(_data_changed_approved, add_column_click, add_row_click, selecte
         ]
         plot_options = [{'label': item['property'], 'value': item['property'],
                          'disabled': True if 'type' not in item or item['type'] not in ['expression',
-                                                                                        'tabulated'] else False} for
+                                                                                        'tabulated', 'geometry'] else False} for
                         item in data]
 
         # save state before proceeding
@@ -1214,7 +1242,54 @@ def update_data(_data_changed_approved, add_column_click, add_row_click, selecte
 
         return data, columns, tooltip_data, style_data_conditional, plot_options, None
 
+@app.callback(
+    Output('div_plot_varaible_dropdown', 'hidden'),
+    Output('div_plot_varaible_dropdown', 'style'),
+    Output('div_plot_variable_input', 'hidden'),
+    Output('div_geometry_2D3D', 'hidden'),
+    Output('div_geometry_2D3D', 'style'),
+    Output('div_geometry_variable_input', 'hidden'),
+   [Input('graph_dropdown', 'value')],
+    [State('yaml_list_data', 'value'),
+     State('main_dropdown', 'value')])
+def show_hide_element(variable, selected_file, current_region):
+    if variable is None:
+        raise PreventUpdate
+    else:
+        data_type = regimes[current_region][selected_file]['regime'].props[variable]['type']
+        if data_type == 'geometry':
 
+            return True, {'display': 'none'}, True, False, {'display': 'inline-block'}, False
+        else:
+
+            return False, {'display': 'inline-block'}, False, True, {'display': 'none'}, True
+
+'''
+@app.callback(
+    Output('graph-multivariables', 'hidden'),
+    Output('graph-singlevariable', 'hidden'),
+    Output('graph_min_x', 'hidden'),
+    Output('graph_max_x', 'hidden'),
+    Output('graph_constant_x', 'hidden'),
+    Output('btn_plot', 'hidden'),
+    Output('btn_store', 'hidden'),
+   [Input('graph_dropdown', 'value')],
+    [State('yaml_list_data', 'value'),
+     State('main_dropdown', 'value')])
+def show_hide_element(variable, selected_file, current_region):
+    if variable is None:
+        raise PreventUpdate
+    else:
+        data_type = regimes[current_region][selected_file]['regime'].props[variable]['type']
+        if data_type == 'geometry':
+            #return div_geometry_plot
+            #return {'display': 'none'}
+            return True, True, True, True, True, True, True
+        else:
+            #return div_line_plot
+            #return {'display': 'block'}
+            return False, False, False, False, False, False, False,
+'''
 # function for select constants or variables
 @app.callback(
     [Output('graph-multivariables', 'options'),
@@ -1434,6 +1509,7 @@ def enable_plot(variable, selected_multivariables, selected_singlevariable, n_cl
                  'array': (True, True, True, True, True, False, message, True, True),
                  'expression': (False, False, False, False, False, False, message, False, False),
                  'tabulated': (True, True, True, True, True, False, message, True, True),
+                 'geometry': (True, True, True, True, True, False, message, True, True),
                  'string': (False, True, True, False, True, False, message, True, True)}
         if current_variable['type'] == 'expression':
             if selected_multivariables:
@@ -1714,4 +1790,4 @@ if __name__ == '__main__':
 
     setup_html_gui(**settings)
 
-    app.run_server(debug=False)
+    app.run_server(debug=True)

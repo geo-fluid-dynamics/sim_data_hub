@@ -38,3 +38,21 @@ test_case3:
   variable_unit: {x: [ 0 0 0 1 0 0 0 ], x2: [ 0 1 0 0 0 0 0 ],x3: [ 0 1 0 0 0 0 0 ]}
   source: None
   meta_free: None
+
+geometry:
+  type: geometry
+  model:
+  orientation:
+
+# firn density from 3-D XCT
+density_firn:
+  type: tabulated
+  value: {10: 0.39, 42: 0.65, 71: 0.76}
+  dev_pdf: Gauss
+  dev_value: {10: 0.0078, 42: 0.013, 71: 0.015}
+  unit_str: kg/m^3
+  unit: [ 1 -3 0 0 0 0 0 ]
+  variable: depth
+  variable_unit_str: m
+  variable_unit: [ 0 1 0 0 0 0 0 ]
+  source: Schlegel.2019
