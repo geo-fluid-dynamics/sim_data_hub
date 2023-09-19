@@ -1,7 +1,10 @@
+"""GUI for the Data Hub"""
+
 # importing libraries
 import ast
 import base64
 import copy
+import importlib
 import os
 
 import dash
@@ -12,29 +15,28 @@ from flask import abort, send_from_directory
 from plotly.tools import mpl_to_plotly
 
 import yaml
-import importlib
 
-module_str = ''
-module = None
+MODULE_STR = ''
+MODULE = None
 modules = (os.path.normpath(os.path.split(os.getcwd())[0])).split(os.sep)
 for i in range(1, len(modules) + 1):
     try:
         importlib.import_module(modules[-i])
-        module_str = modules[-i] + '.' + module_str
-        module = modules[-i]
+        MODULE_STR = modules[-i] + '.' + MODULE_STR
+        MODULE = modules[-i]
         break
     except (ModuleNotFoundError, ValueError) as error:
-        module_str = modules[-i] + '.' + module_str
+        MODULE_STR = modules[-i] + '.' + MODULE_STR
 
-if module is None:  # no submodules
-    module_str = ''
-    module = 'sim-data-hub'
+if MODULE is None:  # no submodules
+    MODULE_STR = ''
+    MODULE = 'sim-data-hub'
 
 
-def load_lib_path(map_lib_path: str = module_str + 'sim-data-hub.library.map.Map',
-                  regime_lib_path: str = module_str + 'sim-data-hub.library.regimes.Regime',
-                  yaml_loader_path: str = module_str + 'sim-data-hub.library.regimes.Regime',
-                  export_lib_path: str = module_str + 'sim-data-hub.export',
+def load_lib_path(map_lib_path: str = MODULE_STR + 'sim-data-hub.library.map.Map',
+                  regime_lib_path: str = MODULE_STR + 'sim-data-hub.library.regimes.Regime',
+                  yaml_loader_path: str = MODULE_STR + 'sim-data-hub.library.regimes.Regime',
+                  export_lib_path: str = MODULE_STR + 'sim-data-hub.export',
                   source_path: str = os.path.join('..', 'yaml-db'),
                   assets_path: str = 'assets',
                   client_relpath: str = os.path.join('assets', 'client'),
@@ -42,7 +44,7 @@ def load_lib_path(map_lib_path: str = module_str + 'sim-data-hub.library.map.Map
     global Map, Regime, PrettySafeLoader, export, yaml_path, assets_folder_path, external_stylesheet, client_path, server_route
 
     try:  # using sim-data-hub as submodule
-        importlib.import_module(module)
+        importlib.import_module(MODULE)
 
     except ModuleNotFoundError:
         map_lib_path = 'library.map.Map'
@@ -85,9 +87,9 @@ def load_available_yaml_files(current_regimes: dict, deep_update: bool = False):
     # make a shallow copy of the input
     available_regimes = dict(current_regimes)
     # Load available yaml files
-    for i, (root, dirs, filenames) in enumerate(
+    for j, (root, _, filenames) in enumerate(
             os.walk(os.path.join(os.path.realpath(os.path.dirname(__file__)), os.pardir, yaml_path))):
-        if i > 0:  # skip root yaml-db directory
+        if j > 0:  # skip root yaml-db directory
             region = os.path.split(root)[-1]
             if region[0] == '_' or region[0] == '.':
                 # skip all "hidden" folders
@@ -131,9 +133,9 @@ def get_regime_from_current_dataset(data, title, description, figures):
     new_regime.description = description
     new_regime.figures = figures
     # changing the format of the data that will be accepted by our code when saved as yaml file
-    for j in range(len(data)):
-        prop = data[j].pop('property')
-        formated_data[prop] = data[j]
+    for datum in data:
+        prop = datum.pop('property')
+        formated_data[prop] = datum
         for entry in formated_data[prop].keys():
             if formated_data[prop][entry] == 'nan':
                 formated_data[prop][entry] = None
@@ -565,7 +567,7 @@ def setup_html_gui(gui_title, logo_data_hub_png, logo_data_hub_png_title, logo_p
 @app.server.route(os.path.join('/', server_route, '<path:filename>'))
 def serve_image(filename):
     try:
-        return send_from_directory(client_path, path=filename, as_attachment=True)
+        return send_from_directory(client_path, filename=filename, as_attachment=True)
     except FileNotFoundError:
         abort(404)
 
@@ -615,7 +617,7 @@ def update_yaml_list(filter_n_clicks, _data_changed_datasets_cancel_n_clicks, _d
     # sort list by name
     for filename in [filenames[0] for filenames in sorted(names.items(), key=lambda x: x[1])]:
         # the label will be the name of the Regime object, but the value will always be the filename
-        enabled = regimes[region][filename]['regime'].props.__contains__('location')
+        enabled = 'location' in regimes[region][filename]['regime'].props
         if names[filename].lower().find(filter_value.lower()) >= 0:
             map_items.append({'label': names[filename], 'value': filename, 'disabled': not enabled})
             data_items.append({'label': '', 'value': filename})
@@ -871,8 +873,8 @@ def download_icex(_btn_serve_icex_n_clicks, modal_is_open, download_disabled, fi
         ya = get_regime_from_current_dataset(data, title, description, current_figures)
         try:
             export.straight_melting(ya, uri)
-        except ValueError as error:
-            return True, True, dash.no_update, str(error)
+        except ValueError as error_message:
+            return True, True, dash.no_update, str(error_message)
         return False, True, uri, ''
     else:
         if not download_disabled:
@@ -907,15 +909,15 @@ def download_nexd(_, modal_is_open, download_disabled, filename_orig, title, des
             from porodisp.interfaces import write_nexd_matprop
             material = export.nexd.matprop(ya, poroelastic=mat_type != 'elastic', saturated=mat_type != 'poro2f')
             write_nexd_matprop(material, uri, poroelastic=mat_type != 'elastic')
-        except ModuleNotFoundError as error:
+        except ModuleNotFoundError as error_message:
             for option in mat_options:
                 option['disabled'] = True
-            return True, True, mat_options, dash.no_update, f'{error}. Please install Python module.'
-        except AttributeError or ValueError as error:
+            return True, True, mat_options, dash.no_update, f'{error_message}. Please install Python module.'
+        except AttributeError or ValueError as error_message:
             for option in mat_options:
                 if option['value'] == mat_type or (option['value'] == 'poro2f' and mat_type == 'poro1f'):
                     option['disabled'] = True
-            return True, False, mat_options, dash.no_update, str(error)
+            return True, False, mat_options, dash.no_update, str(error_message)
         return False, False, dash.no_update, uri, ''
     else:
         if not download_disabled:
@@ -977,15 +979,15 @@ def change_figures(upload_figure_contents, _n_clicks_delete, _data_changed_appro
     img_src = ['' for _ in range(4)]
     img_class = ['img_figure_hidden' for _ in range(4)]
 
-    i = 0
-    for i, figure in enumerate(current_figures.keys()):
-        img_title[i] = figure
-        img_src[i] = current_figures[figure]['src']
-        img_class[i] = 'img_figure'
-        if i == 3:
+    j = 0
+    for j, figure in enumerate(current_figures.keys()):
+        img_title[j] = figure
+        img_src[j] = current_figures[figure]['src']
+        img_class[j] = 'img_figure'
+        if j == 3:
             # do not load more than four figures
             break
-    n_figures = i + 1
+    n_figures = j + 1
 
     # set state of upload "button"
     if n_figures == 2:
@@ -1264,18 +1266,18 @@ def store_data(n_clicks_store, variable, selected_multivariables, singlevariable
 
         data = data or {variable: {}}
 
-        if not data.__contains__(variable):  # if we change to a new property, we then clean and reset the data
+        if variable not in data:  # if we change to a new property, we then clean and reset the data
             data = {variable: {}}
 
         if singlevariable in selected_multivariables:  # the selected variable is in the multivariables list,
             # it means we want to include the min and max
             if minimum is None or maximum is None or minimum == '' or maximum == '':
-                message = u'ERROR: Specify minimum and maximum for {}!'.format(singlevariable)
+                message = 'ERROR: Specify minimum and maximum for {}!'.format(singlevariable)
             else:
                 data[variable].update({singlevariable: [float(minimum), float(maximum)]})
         else:  # this means the selected variable is a constant
             if constant_value is None or constant_value == '':
-                message = u'ERROR: Specify a constant value for {}!'.format(singlevariable)
+                message = 'ERROR: Specify a constant value for {}!'.format(singlevariable)
             else:
                 data[variable].update({singlevariable: float(constant_value)})
 
@@ -1377,10 +1379,10 @@ def show_plot(n_clicks, ts, data, variable, selected_multivariables, singlevaria
             # check for empty entries
             if singlevariable in selected_multivariables:
                 if minimum is None or maximum is None or minimum == '' or maximum == '':
-                    return html.P(u'ERROR: Specify minimum and maximum for {}!'.format(singlevariable))
+                    return html.P('ERROR: Specify minimum and maximum for {}!'.format(singlevariable))
             else:
                 if constant_value is None or constant_value == '':
-                    return html.P(u'ERROR: Specify a constant value for {}!'.format(singlevariable))
+                    return html.P('ERROR: Specify a constant value for {}!'.format(singlevariable))
 
             # check if we have all the available values ready for plotting
             try:
@@ -1390,7 +1392,7 @@ def show_plot(n_clicks, ts, data, variable, selected_multivariables, singlevaria
 
             if not (set(list_variable) <= data[variable].keys()):
                 return html.P(
-                    u'WARNING: Missing value(s) for {}!'.format(set(list_variable) - set(data[variable].keys())))
+                    'WARNING: Missing value(s) for {}!'.format(set(list_variable) - set(data[variable].keys())))
             else:  # this means we have all variables have set to the value(s), and ready for plotting
                 cst = set(list_variable) - set(selected_multivariables)  # constant variable
                 cst_list = dict(filter(lambda i: i[0] in cst, data[variable].items()))  # constant variable lists
