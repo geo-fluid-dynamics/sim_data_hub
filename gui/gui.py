@@ -14,7 +14,13 @@ from dash.exceptions import PreventUpdate
 from flask import abort, send_from_directory
 from plotly.tools import mpl_to_plotly
 
+import caosdb
+import caosadvancedtools.models.parser as caosmodels
 import yaml
+
+TEMPORARY_CAOS = True  # Set to False if you use a permament caosdb server instead of a runtime caosdb
+
+DEBUG = False
 
 MODULE_STR = ''
 MODULE = None
@@ -32,6 +38,15 @@ if MODULE is None:  # no submodules
     MODULE_STR = ''
     MODULE = 'sim-data-hub'
 
+# Prepare caosdb
+if DEBUG:
+    caosdb.Info()
+if TEMPORARY_CAOS:
+    caosentries = caosdb.execute_query('FIND ENTITY')
+    if len(caosentries):
+        caosentries.delete()
+    model = caosmodels.parse_model_from_yaml('model.yml')
+    model.sync_data_model(noquestion=True, verbose=DEBUG)
 
 def load_lib_path(map_lib_path: str = MODULE_STR + 'sim-data-hub.library.map.Map',
                   regime_lib_path: str = MODULE_STR + 'sim-data-hub.library.regimes.Regime',
@@ -41,7 +56,7 @@ def load_lib_path(map_lib_path: str = MODULE_STR + 'sim-data-hub.library.map.Map
                   assets_path: str = 'assets',
                   client_relpath: str = os.path.join('assets', 'client'),
                   stylesheet_path: str = 'stylesheet.css'):
-    global Map, Regime, PrettySafeLoader, export, yaml_path, assets_folder_path, external_stylesheet, client_path, server_route
+    global Map, Regime, PrettySafeLoader, export, yaml_path, yaml_address, assets_folder_path, external_stylesheet, client_path, server_route
 
     try:  # using sim-data-hub as submodule
         importlib.import_module(MODULE)
@@ -58,6 +73,7 @@ def load_lib_path(map_lib_path: str = MODULE_STR + 'sim-data-hub.library.map.Map
     PrettySafeLoader = getattr(importlib.import_module(yaml_loader_path), 'PrettySafeLoader')
     export = importlib.import_module(export_lib_path)
     yaml_path = source_path
+    yaml_address = os.path.join(os.path.realpath(os.path.dirname(__file__)), os.pardir, yaml_path)
     assets_folder_path = os.path.join(os.getcwd(), assets_path)
     # path for temporary downloadable files
     client_path = client_relpath
@@ -104,6 +120,9 @@ def load_available_yaml_files(current_regimes: dict, deep_update: bool = False):
             for filename in current_files:
                 if filename not in filenames:
                     del available_regimes[region][filename]
+                    # Remove file from caosdb
+                    caosfile = caosdb.execute_query(f"FIND FILE WHICH IS STORED AT '/{yaml_path}/{region}/{filename}'")
+                    caosfile.delete()
 
             # Load new files
             for filename in filenames:
@@ -114,6 +133,16 @@ def load_available_yaml_files(current_regimes: dict, deep_update: bool = False):
                     r.load_props(address)
                     props = r.props
                     available_regimes[region][filename] = {'regime': r, 'props': props.applymap(str)}
+                    cont = caosdb.Container()
+                    records = r.as_caos()
+                    records[-1].add_property("filename", value=filename)
+                    cont.extend(records)
+                    cont.insert()
+                    
+                    ## Add file to caosdb
+                    #caoscrawler.crawl.crawler_main(crawled_directory_path=yaml_address, cfood_file_name='cfood.yml',
+                    #                               identifiables_definition_file='identifiables.yml', debug=DEBUG, 
+                    #                               remove_prefix=os.path.join(os.path.realpath(os.path.dirname(__file__)), os.pardir), restricted_path=address)
     return available_regimes
 
 
@@ -614,13 +643,22 @@ def update_yaml_list(filter_n_clicks, _data_changed_datasets_cancel_n_clicks, _d
             name = filename
         names[filename] = name
 
-    # sort list by name
-    for filename in [filenames[0] for filenames in sorted(names.items(), key=lambda x: x[1])]:
-        # the label will be the name of the Regime object, but the value will always be the filename
-        enabled = 'location' in regimes[region][filename]['regime'].props
-        if names[filename].lower().find(filter_value.lower()) >= 0:
+    if filter_value.startswith('FIND '):
+        # Use caosdb query to find files
+        entities = caosdb.execute_query(filter_value)
+        for entity in entities:
+            filename = entity.get_property('filename').value
+            enabled = 'location' in regimes[region][filename]['regime'].props
             map_items.append({'label': names[filename], 'value': filename, 'disabled': not enabled})
             data_items.append({'label': '', 'value': filename})
+    else:
+        # sort list by name
+        for filename in [filenames[0] for filenames in sorted(names.items(), key=lambda x: x[1])]:
+            # the label will be the name of the Regime object, but the value will always be the filename
+            enabled = 'location' in regimes[region][filename]['regime'].props
+            if names[filename].lower().find(filter_value.lower()) >= 0:
+                map_items.append({'label': names[filename], 'value': filename, 'disabled': not enabled})
+                data_items.append({'label': '', 'value': filename})
 
     # Keep previously selected items if possible (i.e., not deleted)
     if list_map_selected_prev is not None:
@@ -1716,4 +1754,4 @@ if __name__ == '__main__':
 
     setup_html_gui(**settings)
 
-    app.run_server(debug=False)
+    app.run_server(debug=DEBUG)

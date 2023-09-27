@@ -1,6 +1,6 @@
 ###############################################################
-# 
-# Generic Regime class 
+#
+# Generic Regime class
 # Julia @ RWTH, March 2020
 # Qian @ RWTH, July 2020
 #
@@ -10,6 +10,7 @@
 import os
 
 # Python imports
+import caosdb
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
@@ -65,6 +66,27 @@ class Regime:
             out += self.props.__repr__()
         out += '\n'
         return out
+
+    def as_caos(self):
+        """
+        Returns Regime object as a list of caosdb.Record objects.
+        """
+        main_record = caosdb.Record(self.name).add_parent("yamlfile")
+        main_record.add_property("datadescription", value=self.description)
+        main_record.add_property("filepath", value=self.propsfile)
+        records = []
+        for prop in self.props:
+            records.append(caosdb.Record(prop).add_parent("data"))
+            for index in self.props.index:
+                if not index.startswith("_"):
+                    value = self.props[prop][index]
+                    if isinstance(value, list):
+                        value = "['" + ", ".join(value) + "']"
+                    name = "datavalue" if index == "value" else index
+                    records[-1].add_property(name, value=value)
+            main_record.add_property("data", value=records[-1])
+        records.append(main_record)
+        return records
 
     def regime_summary(self):
         print('REGIME SUMMARY:')

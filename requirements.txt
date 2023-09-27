@@ -7,3 +7,5 @@ dash~=2.6.2
 dash-bootstrap-components~=1.2.1
 folium~=0.13.0
 cartopy~=0.18.0
+caosdb~=0.12.0
+caosadvancedtools~=0.8.0
