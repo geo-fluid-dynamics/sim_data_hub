@@ -12,49 +12,17 @@ from flask import abort, send_from_directory
 from plotly.tools import mpl_to_plotly
 
 import yaml
-import importlib
-
-module_str = ''
-module = None
-modules = (os.path.normpath(os.path.split(os.getcwd())[0])).split(os.sep)
-for i in range(1, len(modules) + 1):
-    try:
-        importlib.import_module(modules[-i])
-        module_str = modules[-i] + '.' + module_str
-        module = modules[-i]
-        break
-    except (ModuleNotFoundError, ValueError) as error:
-        module_str = modules[-i] + '.' + module_str
-
-if module is None:  # no submodules
-    module_str = ''
-    module = 'sim-data-hub'
+from data_hub.library.regimes.Regime import Regime, PrettySafeLoader
+from data_hub.library.map.Map import Map
+from data_hub import export
 
 
-def load_lib_path(map_lib_path: str = module_str + 'sim-data-hub.library.map.Map',
-                  regime_lib_path: str = module_str + 'sim-data-hub.library.regimes.Regime',
-                  yaml_loader_path: str = module_str + 'sim-data-hub.library.regimes.Regime',
-                  export_lib_path: str = module_str + 'sim-data-hub.export',
-                  source_path: str = os.path.join('..', 'yaml-db'),
+def load_lib_path(source_path: str = os.path.join('data_hub','yaml-db'),
                   assets_path: str = 'assets',
                   client_relpath: str = os.path.join('assets', 'client'),
                   stylesheet_path: str = 'stylesheet.css'):
-    global Map, Regime, PrettySafeLoader, export, yaml_path, assets_folder_path, external_stylesheet, client_path, server_route
+    global yaml_path, assets_folder_path, external_stylesheet, client_path, server_route
 
-    try:  # using sim-data-hub as submodule
-        importlib.import_module(module)
-
-    except ModuleNotFoundError:
-        map_lib_path = 'library.map.Map'
-        regime_lib_path = 'library.regimes.Regime'
-        yaml_loader_path = 'library.regimes.Regime'
-        export_lib_path = 'export'
-        source_path = 'yaml-db'
-
-    Map = getattr(importlib.import_module(map_lib_path), 'Map')
-    Regime = getattr(importlib.import_module(regime_lib_path), 'Regime')
-    PrettySafeLoader = getattr(importlib.import_module(yaml_loader_path), 'PrettySafeLoader')
-    export = importlib.import_module(export_lib_path)
     yaml_path = source_path
     assets_folder_path = os.path.join(os.getcwd(), assets_path)
     # path for temporary downloadable files

@@ -9,36 +9,7 @@ import os
 
 import pandas as pd
 import yaml
-import importlib
-
-module_str = ''
-module = None
-modules = (os.path.normpath(os.path.split(os.getcwd())[0])).split(os.sep)
-for i in range(1, len(modules) + 1):
-    try:
-        importlib.import_module(modules[-i])
-        module_str = modules[-i] + '.' + module_str
-        module = modules[-i]
-        break
-    except (ModuleNotFoundError, ValueError) as error:
-        module_str = modules[-i] + '.' + module_str
-
-if module is None:  # no submodules
-    module_str = ''
-    module = 'sim-data-hub'
-
-
-def load_lib_path(regime_lib_path: str = module_str + 'sim-data-hub.library.regimes.Regime'):
-    global _Regime
-    try:
-        importlib.import_module(module)
-
-    except ModuleNotFoundError:
-        regime_lib_path = 'library.regimes.Regime'
-    _Regime = getattr(importlib.import_module(regime_lib_path), 'Regime')
-
-
-load_lib_path()
+from data_hub.library.regimes.Regime import Regime as _Regime
 
 
 def straight_melting(regime, filename: str, defaults=None):
