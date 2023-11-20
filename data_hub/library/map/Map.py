@@ -19,17 +19,17 @@ class Map:
     """
 
     def __init__(self, location_list=None, map_offline: bool = False, zoom_start='auto',
-                 zoom_min=0, tiles_path: str = 'Stamen Terrain', projection: str = 'Mercator',
+                 zoom_min=0, tiles_path: str = 'https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png', projection: str = 'Mercator',
                  show_meta: bool = True, map_name: str = 'Earth'):
         """
         :param location_list: The list of locations
         :param map_offline: If there are custom maps, 'map_offline' should be set to 'True'. Default is 'False'
         :param zoom_start: Initial zoom level for the map (integer) or 'auto' (str). Default is 'auto'
         :param zoom_min: Minimum zoom level for the map (integer). Default is 0.
-        :param tiles_path: Earth Tilesets in Folium (For online usage, “OpenStreetMap”, “Mapbox Bright” (Limited levels
-         of zoom for free tiles), “Mapbox Control Room” (Limited levels of zoom for free tiles), “Stamen” (Terrain,
-         Toner,and Watercolor), “Cloudmade” (Must pass API key), “Mapbox” (Must pass API key), “CartoDB” (positron and
-        dark_matter)). Default is "Stamen Terrain"
+        :param tiles_path: Map Tilesets in Folium (For online usage, Folium has built-in tilesets “OpenStreetMap” and
+        “CartoDB Positron”. Additional tilesets can be found in https://leaflet-extras.github.io/leaflet-providers/preview/.
+        User can pass an Url format, for example: 'https://{s}.tiles.example.com/{z}/{x}/{y}.png'). The default URL
+        corresponds to "Stamen Terrain" tileset.
         :param  projection: Map projection ('Mercator' (refers to displaying map by Folium), 'AzimuthalEquidistant'
         (refers to displaying map by Cartopy, mainly for publication purpose. This projection provides accurate angles
         about and distances through the central position. Other angles, distances, or areas may be distorted.)). Default
