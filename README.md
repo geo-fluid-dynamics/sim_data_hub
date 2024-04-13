@@ -1,55 +1,76 @@
 # Sim Data Hub
-This is the Sim Data Hub developed by the Geofluiddynamics Group at RWTH Aachen University. It provides and combines 
-available data – measured or taken from the literature – and allows for the display, interpretation and export of the 
-data, for example, to run trajectory models for an ice melting probe.
+The sim data hub is developed by the [Methods for Model-based Development in Computational Engineering](https://www.mbd.rwth-aachen.de/) (MBD) 
+group at RWTH Aachen University. It is an intermediary platform connecting the data visualization tool GUI_for_data_hubs 
+(which will be made public soon) and the scenario-based database. It facilitates the display, interpretation, and export of data.
 
-## Requirements
-Python 3.8 or higher and the following packages are required to use the Sim Data Hub:
- * **General:** cartopy, folium, matplotlib, numpy, pandas, plotly, scipy, yaml
- * **GUI:** dash, dash_bootstrap_components, flask
- 
-In addition, for some specific features, additional packages are required (no installation needed if features are not 
-used):
- * **Export to NEXD:** obspy, porodisp
+## Installation
+1. Download the zip file or clone the repository:
+2. Create a conda environment using ``environment.yml`` and running the following command ``conda env create -f environment.yml``, 
+3. Activate the environment with ``conda activate sim_data_hub``.
 
-## Install
-It is highly recommended to use a virtual python environment (e.g., with Anaconda)!
- 1. Install the requirements listed above or see [requirements.txt](requirements.txt), e.g., using anaconda:
-    ```
-    while read requirement; do conda install -c conda-forge --yes $requirement; done < 
-    requirements.txt
-    ```
-    or using pip:
-    ```
-    pip install -r requirements.txt
-    ```
- 2. Run:
-    ```
-    python setup.py install
-    ```
+## Visualization library 
+The Sim Data Hub provides essential functions for data visualization through its classes in [`library`](./data_hub/library). 
+Two primary classes are offered:
+* Regime class: It is the core element of the Data Hub. It enables the management of input data, interpolation of 
+tabulated data, and evaluation of mathematical expressions.
+* Map class: It offers an overview of the locations where the data was collected through interactive maps generated using
+Folium and/or Cartopy. Customized maps can be provided in a tile-structure in `assets/custom_tiles/(Map bodies)`, 
+where `Map Bodies` can be Planet (e.g Enceladus, Europa, Ganymede and Mars) or Host rock (e.g claystone, salt and crystalline).
+More detailed information can be found in [custommaps.md](custommaps.md).  
 
-### Maps for other map bodies
-It is possible to include maps for other map bodies than Earth (or to use custom maps for Earth). Due to license 
-concerns and space issues, we do not provide other maps in this repository. Short story: provide the map in a 
-tile-structure in `gui/assets/custom_tiles/(Map bodies)`, where `Map Bodies` can be Planet (e.g Enceladus, Europa, 
-Ganymede and Mars) or Host rock (e.g claystone, salt and crystalline).
-Detailed information can be found in [custommaps.md](custommaps.md).
+The `assets` and `export` folders are specifically designed to support GUI visualization of data:
+* `assets`: Provides the basic CSS template for designing the GUI layout.
+* `export`: Offers additional features such as data export to NEXD.
 
-## Usage
-The GUI is the best starting point to view, edit and add data to your database. Simply run the Python program 
-[gui.py](gui/gui.py). It will start a local flask server. Start your favorite webbrowser and navigate to the site gui.py
-is providing (usually `http://127.0.0.1:8050/`). 
+## Guideline for Creating a Custom Data Hub
+To create a customized data hub, add the Sim Data Hub as a submodule by following these steps:
+1. Navigate to the `data_hub` directory within your_data_hub repository, and run the following command to add the 
+sim_data_hub submodule:
+````
+git submodule add git@github.com:geo-fluid-dynamics/sim_data_hub.git
+````
+2. After adding the submodule,the Sim Data Hub will then be included in the `data_hub` directory. However, this folder 
+might appear empty. To ensure that the submodule is properly initialized and updated, execute the following commands:
+````
+git submodule init
+git submodule update
+````
+If the above commands do not work, you can try cloning the submodule recursively using the following command:
+````
+git clone --recurse-submodules https://github.com/geo-fluid-dynamics/sim_data_hub.git
+````
 
-However, the database consists of plain yaml-files in [yaml-db](yaml-db) that you could manipulate by other tools, too.
+Afterward, add your data to the `data_hub/yaml-db` folder, following the instructions in [`data_hub/yaml-db/readme.md`](./data_hub/yaml-db/readme.md)
+for creating YAML files. Additionally, customize the Map and Regime classes to fit your visualization needs. 
+An example use case can be found in  [Smart Data Hub](https://github.com/geo-fluid-dynamics/smart_data_hub.git), 
+where modified Regime and Map classes are located in `smart_data_hub/data_hub/library`. You can also modify the layout 
+of the GUI by copying the assets folder and placing it at the same level as the data_hub folder. The Smart Data Hub is 
+an example of creating a custom data hub.  
 
-The central element of the Data Hub is the [Regime class](library/regimes/Regime.py). You could, for example, 
-use this to manage the input data in your codes. It can access the data, interpolate tabulated data, and evaluate any
-mathematical expression.
-
+To connect with the GUI and change the layout to your own design, add a `config_gui.yml` file to your data hub folder 
+located at `your_data_hub/data_hub/config_gui.yml`. The contents of this YAML file should include:
+```
+gui_title: 
+logo_data_hub_png: 
+logo_data_hub_png_title: 
+# additional logo on top right
+logo_png:
+uni_logo_png: 
+main_dropdown_title: 
+```
+In summary, the structure of your_data_hub should include:
+```
+-assets (optional)
+-data_hub
+    -export (optional)
+    -library (optional)
+    -sim_data_hub
+    -yaml-db
+    -config_gui.yml (optional)
+```
 ## Credits
 
-The main authors of this project are [@mboxberg](https://github.com/mboxberg) and [@CQVera](https://github.com/CQVera). 
-The GUI was mainly developed by [@junayed786](https://github.com/junayed786).
+The authors of this project and [@CQVera](https://github.com/CQVera) and [@mboxberg](https://github.com/mboxberg).
 
 ## License
 

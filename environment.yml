@@ -1,0 +1,16 @@
+name: sim_data_hub
+channels:
+  - pypi
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - numpy
+  - scipy
+  - matplotlib
+  - pandas
+  - pyyaml
+  - dash
+  - dash-bootstrap-components
+  - folium
+  - cartopy

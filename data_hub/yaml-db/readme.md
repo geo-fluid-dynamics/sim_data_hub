@@ -1,23 +1,15 @@
 # yaml-db
-This document explains the structure of folders and files in the yaml-db
+This document explains the structure of folders and files in the yaml-db.
 
 ## Directories / Folders
-Each folder represents one map body, for example, Earth, Europa, and Mars or claystone, salt and crystalline. There is 
-only one exception, which is the folder "_default". This folder contains the default material properties that can be 
-used when there is no value for a certain parameter at a specific location.
-
-No subfolders are supported.
+Each folder in the yaml-db represents a distinct category from the dropdown list in GUI, each folder contains YAML files.
 
 ## Files
-For each planetary body, i.e. each folder, there can be any number of different yaml-files that are associated with a 
-certain location. There can be several files with the same location (e.g., repeated measurements in different years), 
-but there cannot be several locations within one file.
-The names of the files should contain the location of the dataset.
+Within each folder, there can be multiple YAML files associated with specific datasets.
+Each YAML file should include a "name" field, a name similar to the filename, and a "description" field 
+offering details about the dataset. Additionally, each file includes various other fields depending on the dataset itself.  
 
-The files should contain a field "name", that gives the name similar to the filename, a field "description", that gives 
-details on the dataset, a location and other fields that depend on the dataset itself.
-
-A field other than name and description has the following structure (it must contain type, value, unit and unit_str; it 
+Fields within the YAML files follow a specific structure (it must contain type, value, unit and unit_str; it 
 should contain source; other subfields can be omitted):
 
 ```
@@ -37,50 +29,7 @@ field:
   meta_sys: STR                     # Meta data from systematic databases, e.g. NASA database.
   meta_free: STR                    # Free text meta data.
 ```
-
-## Fields
-
-The different fields should have the the structure (PROPERTY)_(OBJECT), or only (PROPERTY) if the property is 
-independent of any object (e.g., material or interface). Examples are density_ice or gravitational_acceleration.
-Special fields are _name_, _description_, and _figures_, which are used to provide additional information for the 
-dataset. 
-The following list an example of all properties and objects known to the Ice, yet.
-
-| Property                   | Object   |
-|----------------------------|----------|
-| accumulation               | air      |
-| attenuation_length         | base     |
-| bulk_modulus               | brine    |
-| bulk_modulus_drained       | firn     |
-| density                    | ice      |
-| depth                      | seawater |
-| dynamic_viscosity          | snow     |
-| elevation                  | surface  |
-| geothermal_heat_flux       | water    |
-| gravitational_acceleration |          |
-| latent_heat_melting        |          |
-| latent_heat_sublimation    |          |
-| location                   |          |
-| mass                       |          |
-| melt_rate                  |          |
-| melting_temperature        |          |
-| porosity                   |          |
-| permeability               |          |
-| Q_P                        |          |
-| Q_S                        |          |
-| salt_concentration         |          |
-| saturation                 |          |
-| shear_modulus              |          |
-| specific_heat_capacity     |          |
-| surface_depth              |          |
-| temperature                |          |
-| thermal_conductivity       |          |
-| thermal_diffusivity        |          |
-| thermal_expansivity        |          |
-| thickness                  |          |
-| velocity_P                 |          |
-| velocity_S                 |          |
-| youngs_modulus             |          |
+An example YAML file can be found at earth/multivariables_equations.yaml.
 
 ## sources.bib
-The file sources.bib contains BibTeX entries for all sources that are mentioned in the yaml-db.
+The file sources.bib contains BibTeX entries for all sources referenced within the yaml-db.
