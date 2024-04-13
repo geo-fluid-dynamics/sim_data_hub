@@ -24,12 +24,13 @@ The `assets` and `export` folders are specifically designed to support GUI visua
 
 ## Guideline for Creating a Custom Data Hub
 To create a customized data hub, add the Sim Data Hub as a submodule by following these steps:
-1. Navigate to the `data_hub` directory within your_data_hub repository, and run the following command to add the 
+1. Create a `data_hub` folder within your_data_hub GitHub repository.
+2. Navigate to the `data_hub` directory using the command line: `cd data_hub`, and run the following command to add the 
 sim_data_hub submodule:
 ````
 git submodule add git@github.com:geo-fluid-dynamics/sim_data_hub.git
 ````
-2. After adding the submodule,the Sim Data Hub will then be included in the `data_hub` directory. However, this folder 
+3. After adding the submodule,the Sim Data Hub will then be included in the `data_hub` directory. However, this folder 
 might appear empty. To ensure that the submodule is properly initialized and updated, execute the following commands:
 ````
 git submodule init
