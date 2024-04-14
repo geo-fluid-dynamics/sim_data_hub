@@ -71,7 +71,7 @@ In summary, the structure of your_data_hub should include:
 ```
 ## Credits
 
-The authors of this project and [@CQVera](https://github.com/CQVera) and [@mboxberg](https://github.com/mboxberg).
+The authors of this project are [@CQVera](https://github.com/CQVera) and [@mboxberg](https://github.com/mboxberg).
 
 ## License
 
